@@ -3,3 +3,5 @@ coverage/
 lib/
 dist/
 *.log
+.pnp.js
+.yarn

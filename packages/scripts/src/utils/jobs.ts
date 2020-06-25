@@ -43,7 +43,7 @@ export function run(
 		options.env = newEnv
 	}
 
-	const spawned = spawn(exec, args, options) as ChildProcess
+	const spawned = spawn('yarn', ['dlx', exec, ...args], options) as ChildProcess
 	let output = ''
 	let error = ''
 	if (!toConsole) {
