@@ -23,8 +23,7 @@ export interface RunResult {
  * @param toConsole If the output should be written to the console
  */
 export function run(
-	exec: string,
-	args: unknown[],
+	{ exec, args, npx }: RunArg,
 	toConsole = true,
 ): Promise<RunResult> {
 	const options = {
@@ -43,7 +42,14 @@ export function run(
 		options.env = newEnv
 	}
 
-	const spawned = spawn(exec, args, options) as ChildProcess
+	const spawned =
+		npx != null
+			? (spawn(
+					'npx',
+					['-q', ...getNpxArgs(npx), exec, ...args],
+					options,
+			  ) as ChildProcess)
+			: (spawn(exec, args, options) as ChildProcess)
 	let output = ''
 	let error = ''
 	if (!toConsole) {
@@ -67,10 +73,29 @@ export function run(
 	})
 }
 
+/**
+ * Get the package installable arguments
+ * @param npx the dependency arguments, or just a boolean flag
+ */
+function getNpxArgs(npx: boolean | string[]): string[] {
+	if (!Array.isArray(npx)) {
+		return []
+	}
+
+	// convert each npx arg into a package
+	const result: string[] = []
+	npx.forEach((item: string) => result.push('-p', item))
+	return result
+}
+
 export interface RunArg {
 	exec: string
 	id?: string
 	args: unknown[]
+	/**
+	 * if true, executes via npx; if a string array, uses them as package arguments
+	 */
+	npx?: boolean | string[]
 }
 
 function printJob(job: RunArg): void {
@@ -79,9 +104,9 @@ function printJob(job: RunArg): void {
 }
 
 async function executeJob(job: RunArg): Promise<number> {
-	const { exec, id, args } = job
+	const { exec, id } = job
 	let code = 0
-	const result = await run(exec, args)
+	const result = await run(job)
 	const subCode = result.code
 	printJob(job)
 	if (subCode > 0) {

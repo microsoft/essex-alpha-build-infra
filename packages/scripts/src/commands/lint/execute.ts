@@ -16,11 +16,13 @@ export interface LintCommandOptions {
 const PRETTY_QUICK_JOB: RunArg = {
 	exec: 'pretty-quick',
 	args: ['--check'],
+	npx: ['prettier', 'pretty-quick'],
 }
 
 const TONAL_LINTING_JOB: RunArg = {
 	exec: 'alex',
 	args: ['.'],
+	npx: true,
 }
 
 const SPELL_CHECK_JOB = (spellingIgnore: string | undefined): RunArg => {
@@ -40,6 +42,7 @@ const SPELL_CHECK_JOB = (spellingIgnore: string | undefined): RunArg => {
 	return {
 		exec: 'mdspell',
 		args,
+		npx: ['markdown-spellcheck'],
 	}
 }
 
